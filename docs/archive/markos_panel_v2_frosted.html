@@ -1,0 +1,942 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg-page:#f0f2f7;
+  --bg-glass:rgba(255,255,255,0.72);
+  --bg-glass-hover:rgba(255,255,255,0.88);
+  --bg-glass-deep:rgba(255,255,255,0.55);
+  --bg-sidebar:rgba(255,255,255,0.6);
+  --border-glass:rgba(255,255,255,0.9);
+  --border-subtle:rgba(0,0,0,0.07);
+  --shadow-card:0 2px 24px rgba(0,0,0,0.08),0 1px 4px rgba(0,0,0,0.05);
+  --shadow-hover:0 8px 32px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06);
+  --shadow-top:0 1px 0 rgba(255,255,255,0.9) inset;
+  --text-primary:#1a1a2e;
+  --text-secondary:#6b7280;
+  --text-muted:#9ca3af;
+  --accent-blue:#3b82f6;
+  --accent-blue-soft:rgba(59,130,246,0.12);
+  --accent-green:#10b981;
+  --accent-green-soft:rgba(16,185,129,0.12);
+  --accent-purple:#8b5cf6;
+  --accent-purple-soft:rgba(139,92,246,0.12);
+  --accent-amber:#f59e0b;
+  --accent-amber-soft:rgba(245,158,11,0.12);
+  --accent-red:#ef4444;
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:22px;
+  --radius-xl:28px;
+  --font:'Inter',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg-page);color:var(--text-primary);min-height:100vh;position:relative;overflow-x:hidden;}
+body::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(147,197,253,0.25) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 80%,rgba(196,181,253,0.2) 0%,transparent 55%),radial-gradient(ellipse 50% 40% at 50% 50%,rgba(167,243,208,0.15) 0%,transparent 50%);pointer-events:none;z-index:0;}
+
+.shell{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* TOP BAR */
+.topbar{
+  display:flex;align-items:center;gap:0;
+  height:56px;padding:0 20px;
+  background:rgba(255,255,255,0.65);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  border-bottom:1px solid var(--border-glass);
+  box-shadow:0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 12px rgba(0,0,0,0.04);
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:center;gap:9px;margin-right:28px;}
+.logo-mark{
+  width:30px;height:30px;border-radius:9px;
+  background:linear-gradient(135deg,#60a5fa,#818cf8);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(99,102,241,0.35);
+}
+.logo-mark svg{width:16px;height:16px;fill:white;}
+.logo-name{font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:-0.02em;}
+.logo-name span{background:linear-gradient(90deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+
+/* NAV PILLS */
+.nav{display:flex;align-items:center;gap:4px;flex:1;}
+.nav-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;
+  cursor:pointer;font-size:13px;font-weight:500;
+  color:var(--text-secondary);
+  border:1px solid transparent;
+  transition:all 0.2s ease;
+}
+.nav-pill:hover{background:rgba(0,0,0,0.05);color:var(--text-primary);}
+.nav-pill.active{
+  background:rgba(255,255,255,0.85);
+  border-color:var(--border-subtle);
+  color:var(--text-primary);
+  box-shadow:0 1px 4px rgba(0,0,0,0.08),0 1px 0 rgba(255,255,255,0.9) inset;
+}
+.nav-pill .pill-icon{font-size:14px;}
+
+.topbar-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.status-pill{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;
+  background:rgba(16,185,129,0.1);
+  border:1px solid rgba(16,185,129,0.2);
+  font-size:11px;font-weight:500;color:#059669;
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#818cf8,#60a5fa);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:white;cursor:pointer;
+  box-shadow:0 2px 8px rgba(99,102,241,0.3);
+}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;gap:0;}
+
+/* SIDEBAR */
+.sidebar{
+  width:210px;min-width:210px;
+  padding:16px 12px;
+  background:rgba(255,255,255,0.5);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border-right:1px solid var(--border-glass);
+  display:flex;flex-direction:column;gap:2px;
+}
+.sb-section{
+  font-size:11px;font-weight:600;color:var(--text-muted);
+  letter-spacing:0.06em;text-transform:uppercase;
+  padding:10px 8px 4px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:12px;
+  cursor:pointer;font-size:13px;font-weight:400;
+  color:var(--text-secondary);transition:all 0.18s;
+}
+.sb-item:hover{background:rgba(0,0,0,0.04);color:var(--text-primary);}
+.sb-item.active{
+  background:rgba(59,130,246,0.1);
+  color:#2563eb;font-weight:500;
+}
+.sb-item .si{font-size:15px;width:20px;text-align:center;}
+.sb-badge{
+  margin-left:auto;font-size:11px;font-weight:500;
+  padding:1px 7px;border-radius:10px;
+  background:rgba(0,0,0,0.06);color:var(--text-muted);
+}
+.sb-badge.warn{background:rgba(245,158,11,0.12);color:#d97706;}
+.sb-badge.blue{background:rgba(59,130,246,0.1);color:#2563eb;}
+.sb-divider{height:1px;background:rgba(0,0,0,0.05);margin:6px 8px;}
+
+/* DISK USAGE IN SIDEBAR */
+.sb-disk{padding:10px 8px 4px;}
+.sb-disk-bar{height:5px;background:rgba(0,0,0,0.07);border-radius:3px;overflow:hidden;margin-top:6px;}
+.sb-disk-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#3b82f6,#818cf8);}
+.sb-disk-label{font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;margin-top:5px;}
+
+/* MAIN */
+.main{flex:1;padding:20px;overflow:auto;}
+
+/* === PANEL SYSTEM === */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.section-title{font-size:20px;font-weight:600;letter-spacing:-0.02em;color:var(--text-primary);}
+.section-sub{font-size:13px;color:var(--text-muted);margin-top:1px;}
+.btn-group{display:flex;gap:8px;}
+
+/* BUTTONS */
+.btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:12px;
+  font-size:13px;font-weight:500;cursor:pointer;
+  transition:all 0.18s;border:none;font-family:var(--font);
+}
+.btn-primary{
+  background:linear-gradient(135deg,#3b82f6,#6366f1);
+  color:white;box-shadow:0 2px 8px rgba(59,130,246,0.3);
+}
+.btn-primary:hover{box-shadow:0 4px 16px rgba(59,130,246,0.4);transform:translateY(-1px);}
+.btn-ghost{
+  background:rgba(255,255,255,0.7);
+  color:var(--text-secondary);
+  border:1px solid var(--border-subtle);
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+.btn-ghost:hover{background:rgba(255,255,255,0.9);color:var(--text-primary);}
+
+/* GLASS CARD */
+.glass-card{
+  background:var(--bg-glass);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid var(--border-glass);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-card),var(--shadow-top);
+  overflow:hidden;
+  transition:box-shadow 0.2s,transform 0.2s;
+}
+.glass-card:hover{box-shadow:var(--shadow-hover),var(--shadow-top);}
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(0,0,0,0.05);
+}
+.card-title{font-size:14px;font-weight:600;color:var(--text-primary);}
+.card-body{padding:16px 18px;}
+
+/* STAT GRID */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.stat-card{
+  background:var(--bg-glass);
+  backdrop-filter:blur(20px) saturate(160%);
+  -webkit-backdrop-filter:blur(20px) saturate(160%);
+  border:1px solid var(--border-glass);
+  border-radius:var(--radius-md);
+  padding:16px;
+  box-shadow:var(--shadow-card),var(--shadow-top);
+  position:relative;overflow:hidden;
+  transition:all 0.2s;
+}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover),var(--shadow-top);}
+.stat-card::after{
+  content:'';position:absolute;
+  top:-30px;right:-20px;
+  width:80px;height:80px;
+  border-radius:50%;opacity:0.08;
+}
+.stat-blue::after{background:var(--accent-blue);}
+.stat-green::after{background:var(--accent-green);}
+.stat-purple::after{background:var(--accent-purple);}
+.stat-amber::after{background:var(--accent-amber);}
+.stat-icon{
+  width:34px;height:34px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;margin-bottom:10px;
+}
+.stat-icon.blue{background:var(--accent-blue-soft);}
+.stat-icon.green{background:var(--accent-green-soft);}
+.stat-icon.purple{background:var(--accent-purple-soft);}
+.stat-icon.amber{background:var(--accent-amber-soft);}
+.stat-label{font-size:11px;font-weight:500;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:4px;text-transform:uppercase;}
+.stat-value{font-size:22px;font-weight:600;letter-spacing:-0.03em;line-height:1;}
+.stat-sub{font-size:11px;color:var(--text-muted);margin-top:5px;}
+.stat-bar{height:3px;background:rgba(0,0,0,0.07);border-radius:2px;margin-top:10px;overflow:hidden;}
+.stat-fill{height:100%;border-radius:2px;transition:width 1s ease;}
+.fill-blue{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+.fill-green{background:linear-gradient(90deg,#10b981,#34d399);}
+.fill-purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+.fill-amber{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+
+/* GRIDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.grid-cols{display:grid;grid-template-columns:3fr 2fr;gap:12px;}
+
+/* CHART SVG */
+svg.chart-svg{width:100%;height:72px;overflow:visible;}
+
+/* PROCESS TABLE */
+.proc-list{display:flex;flex-direction:column;gap:1px;}
+.proc-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.04);
+  font-size:13px;
+}
+.proc-row:last-child{border-bottom:none;}
+.proc-name{font-weight:500;color:var(--text-primary);width:110px;flex-shrink:0;}
+.proc-bar-wrap{flex:1;height:4px;background:rgba(0,0,0,0.06);border-radius:2px;overflow:hidden;}
+.proc-bar-fill{height:100%;border-radius:2px;transition:width 0.8s ease;}
+.proc-val{font-size:12px;color:var(--text-muted);width:32px;text-align:right;flex-shrink:0;}
+.proc-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.dot-on{background:#10b981;}
+.dot-warn{background:#f59e0b;}
+.dot-off{background:#d1d5db;}
+
+/* TERMINAL */
+.terminal{
+  background:rgba(15,23,42,0.88);
+  backdrop-filter:blur(12px);
+  border-radius:var(--radius-md);
+  padding:16px;
+  font-family:'SF Mono','Fira Code',monospace;
+  font-size:12px;line-height:1.85;
+  border:1px solid rgba(255,255,255,0.08);
+}
+.tp{color:#34d399;}.tc{color:#e2e8f0;}.to{color:#94a3b8;padding-left:14px;display:block;}
+.tcursor{display:inline-block;width:7px;height:13px;background:#60a5fa;animation:cblink 1s step-end infinite;vertical-align:text-bottom;}
+@keyframes cblink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* === CLOUD DRIVE === */
+.toolbar-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.search-glass{
+  flex:1;display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.7);
+  border:1px solid var(--border-glass);
+  border-radius:12px;padding:8px 14px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06),0 1px 0 rgba(255,255,255,0.9) inset;
+}
+.search-glass input{
+  background:transparent;border:none;outline:none;
+  font-size:13px;color:var(--text-primary);width:100%;font-family:var(--font);
+}
+.search-glass input::placeholder{color:var(--text-muted);}
+.view-toggle{display:flex;background:rgba(0,0,0,0.05);border-radius:10px;padding:3px;gap:2px;}
+.vbtn{
+  padding:5px 10px;border-radius:8px;border:none;
+  font-size:13px;cursor:pointer;color:var(--text-muted);
+  background:transparent;transition:all 0.15s;font-family:var(--font);
+}
+.vbtn.active{background:rgba(255,255,255,0.85);color:var(--text-primary);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);margin-bottom:12px;}
+.breadcrumb span{cursor:pointer;transition:color 0.15s;}
+.breadcrumb span:hover{color:var(--accent-blue);}
+.breadcrumb .bc-cur{color:var(--text-primary);font-weight:500;}
+.bc-sep{color:var(--text-muted);}
+
+/* UPLOAD ZONE */
+.upload-zone{
+  border:2px dashed rgba(59,130,246,0.25);
+  border-radius:var(--radius-lg);
+  padding:24px;text-align:center;cursor:pointer;
+  background:rgba(59,130,246,0.03);
+  transition:all 0.2s;margin-bottom:14px;
+}
+.upload-zone:hover{border-color:rgba(59,130,246,0.45);background:rgba(59,130,246,0.06);}
+.upload-zone .uz-icon{font-size:26px;display:block;margin-bottom:6px;}
+.upload-zone p{font-size:13px;color:var(--text-secondary);}
+.upload-zone small{font-size:11px;color:var(--text-muted);}
+
+/* FILE GRID */
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px;}
+.file-card{
+  background:var(--bg-glass);
+  backdrop-filter:blur(16px);border:1px solid var(--border-glass);
+  border-radius:var(--radius-md);padding:16px 12px;
+  cursor:pointer;transition:all 0.2s;text-align:center;
+  box-shadow:var(--shadow-card),var(--shadow-top);position:relative;
+}
+.file-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover),var(--shadow-top);border-color:rgba(59,130,246,0.2);}
+.file-card.sel{border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.06);}
+.fi{font-size:28px;display:block;margin-bottom:8px;}
+.fn{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px;}
+.fm{font-size:11px;color:var(--text-muted);}
+.fcheck{
+  position:absolute;top:8px;right:8px;width:18px;height:18px;
+  border-radius:50%;background:var(--accent-blue);
+  display:none;align-items:center;justify-content:center;
+  font-size:10px;color:white;
+}
+.file-card.sel .fcheck{display:flex;}
+
+/* CONTEXT BAR */
+.context-bar{
+  display:none;align-items:center;gap:10px;
+  padding:10px 16px;border-radius:var(--radius-md);
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--border-glass);
+  box-shadow:var(--shadow-card);
+  margin-top:4px;
+}
+.context-bar.show{display:flex;}
+
+/* === HOMEPAGE === */
+.hp-hero{text-align:center;padding:28px 0 20px;}
+.hp-greeting{font-size:26px;font-weight:600;letter-spacing:-0.02em;}
+.hp-greeting em{font-style:normal;background:linear-gradient(90deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hp-date-str{font-size:12px;color:var(--text-muted);margin-top:4px;}
+
+.hp-search-wrap{max-width:500px;margin:0 auto 24px;}
+.hp-search{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.78);
+  backdrop-filter:blur(20px);border:1px solid var(--border-glass);
+  border-radius:16px;padding:10px 16px;
+  box-shadow:var(--shadow-card),var(--shadow-top);
+  transition:box-shadow 0.2s;
+}
+.hp-search:focus-within{box-shadow:0 0 0 3px rgba(59,130,246,0.15),var(--shadow-card);}
+.hp-search input{flex:1;background:transparent;border:none;outline:none;font-size:14px;color:var(--text-primary);font-family:var(--font);}
+.hp-search input::placeholder{color:var(--text-muted);}
+.eng-row{display:flex;gap:4px;}
+.eng{
+  width:26px;height:26px;border-radius:8px;
+  background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.07);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:12px;font-weight:600;
+  color:var(--text-secondary);transition:all 0.15s;
+}
+.eng:hover{background:rgba(0,0,0,0.08);}
+.eng.active{background:var(--accent-blue-soft);border-color:rgba(59,130,246,0.25);color:#2563eb;}
+
+/* WIDGET CHIPS */
+.hp-chips{display:flex;gap:10px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;}
+.chip{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;border-radius:14px;
+  background:rgba(255,255,255,0.75);
+  border:1px solid var(--border-glass);
+  box-shadow:var(--shadow-card),var(--shadow-top);
+  font-size:13px;backdrop-filter:blur(16px);
+}
+.chip-icon{font-size:16px;}
+.chip-val{font-weight:600;font-size:14px;}
+.chip-label{color:var(--text-muted);font-size:11px;}
+
+/* APP SECTIONS */
+.app-section{margin-bottom:22px;}
+.app-sec-head{
+  display:flex;align-items:center;gap:10px;
+  font-size:12px;font-weight:600;color:var(--text-muted);
+  letter-spacing:0.07em;text-transform:uppercase;margin-bottom:12px;
+}
+.app-sec-head::after{content:'';flex:1;height:1px;background:rgba(0,0,0,0.07);}
+.app-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;}
+.app-item{
+  display:flex;flex-direction:column;align-items:center;gap:7px;
+  padding:14px 8px;border-radius:var(--radius-md);cursor:pointer;
+  background:var(--bg-glass);backdrop-filter:blur(16px);
+  border:1px solid var(--border-glass);
+  box-shadow:var(--shadow-card),var(--shadow-top);
+  transition:all 0.2s;text-decoration:none;color:inherit;
+}
+.app-item:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover),var(--shadow-top);}
+.app-ico{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+}
+.ico-blue{background:linear-gradient(135deg,rgba(59,130,246,0.15),rgba(99,102,241,0.15));border:1px solid rgba(59,130,246,0.15);}
+.ico-green{background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(52,211,153,0.12));border:1px solid rgba(16,185,129,0.15);}
+.ico-purple{background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(167,139,250,0.12));border:1px solid rgba(139,92,246,0.15);}
+.ico-orange{background:linear-gradient(135deg,rgba(245,158,11,0.12),rgba(251,191,36,0.12));border:1px solid rgba(245,158,11,0.15);}
+.ico-red{background:linear-gradient(135deg,rgba(239,68,68,0.1),rgba(252,165,165,0.1));border:1px solid rgba(239,68,68,0.12);}
+.ico-teal{background:linear-gradient(135deg,rgba(20,184,166,0.12),rgba(94,234,212,0.12));border:1px solid rgba(20,184,166,0.15);}
+.app-name{font-size:12px;font-weight:500;text-align:center;line-height:1.3;color:var(--text-primary);}
+.app-sub{font-size:10px;color:var(--text-muted);font-family:monospace;}
+
+/* DOCKER ROWS */
+.docker-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:13px;}
+.docker-row:last-child{border:none;}
+.docker-name{font-weight:500;flex:1;}
+.docker-port{font-family:monospace;font-size:11px;color:var(--text-muted);}
+.docker-status{font-size:11px;font-weight:500;padding:2px 8px;border-radius:8px;}
+.ds-on{background:rgba(16,185,129,0.1);color:#059669;}
+.ds-warn{background:rgba(245,158,11,0.1);color:#d97706;}
+
+/* TRANSFER PILL */
+.transfer-pill{
+  position:sticky;bottom:16px;
+  margin-top:16px;
+  background:rgba(255,255,255,0.88);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border-glass);
+  border-radius:16px;
+  padding:12px 16px;
+  box-shadow:var(--shadow-hover);
+  display:none;flex-direction:column;gap:8px;
+  animation:slideup 0.3s ease;
+}
+@keyframes slideup{from{transform:translateY(16px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.transfer-pill.show{display:flex;}
+.tp-header{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:500;}
+.tp-bar{height:4px;background:rgba(0,0,0,0.07);border-radius:2px;overflow:hidden;}
+.tp-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#10b981,#34d399);transition:width 0.3s;}
+.tp-info{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);}
+.tp-close{cursor:pointer;color:var(--text-muted);font-size:18px;line-height:1;}
+</style>
+
+<div class="shell">
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16"><path d="M3 3h4v4H3zm6 0h4v4h-4zM3 9h4v4H3zm6 2h1v2h-1zm2 0h1v2h-1z"/></svg>
+    </div>
+    <div class="logo-name">Mark<span>OS</span></div>
+  </div>
+  <nav class="nav">
+    <div class="nav-pill active" onclick="switchPanel('nas')"><span class="pill-icon">⚡</span> NAS</div>
+    <div class="nav-pill" onclick="switchPanel('drive')"><span class="pill-icon">☁</span> CloudDrive</div>
+    <div class="nav-pill" onclick="switchPanel('home')"><span class="pill-icon">◈</span> HomePage</div>
+    <div class="nav-pill" onclick="switchPanel('terminal')"><span class="pill-icon">▸</span> Terminal</div>
+  </nav>
+  <div class="topbar-right">
+    <div class="status-pill"><div class="live-dot"></div>Online · 23ms</div>
+    <div class="avatar">M</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBARS -->
+  <div class="sidebar" id="sb-nas">
+    <div class="sb-section">System</div>
+    <div class="sb-item active"><span class="si">◈</span> Overview</div>
+    <div class="sb-item"><span class="si">▦</span> CPU & Memory</div>
+    <div class="sb-item"><span class="si">▤</span> Disk Manager</div>
+    <div class="sb-item"><span class="si">◉</span> Network</div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Services</div>
+    <div class="sb-item"><span class="si">▶</span> Docker <span class="sb-badge blue">12</span></div>
+    <div class="sb-item"><span class="si">⚙</span> Processes <span class="sb-badge">148</span></div>
+    <div class="sb-item"><span class="si">◎</span> Cron Jobs</div>
+    <div class="sb-item"><span class="si">⊘</span> Firewall</div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Logs</div>
+    <div class="sb-item"><span class="si">▣</span> System Log</div>
+    <div class="sb-item"><span class="si">⚠</span> Alerts <span class="sb-badge warn">3</span></div>
+  </div>
+
+  <div class="sidebar" id="sb-drive" style="display:none">
+    <div class="sb-section">Storage</div>
+    <div class="sb-item active"><span class="si">◉</span> All Files</div>
+    <div class="sb-item"><span class="si">⭐</span> Starred</div>
+    <div class="sb-item"><span class="si">▶</span> Recent</div>
+    <div class="sb-item"><span class="si">⊙</span> Shared</div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Categories</div>
+    <div class="sb-item"><span class="si">🎬</span> Videos <span class="sb-badge">47</span></div>
+    <div class="sb-item"><span class="si">🖼</span> Images <span class="sb-badge">312</span></div>
+    <div class="sb-item"><span class="si">📁</span> Docs <span class="sb-badge">89</span></div>
+    <div class="sb-item"><span class="si">🎵</span> Music <span class="sb-badge">231</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-disk">
+      <div style="font-size:12px;font-weight:500;color:var(--text-secondary)">Storage</div>
+      <div class="sb-disk-bar"><div class="sb-disk-fill" style="width:43%"></div></div>
+      <div class="sb-disk-label"><span>430 GB used</span><span>1 TB</span></div>
+    </div>
+  </div>
+
+  <div class="sidebar" id="sb-home" style="display:none">
+    <div class="sb-section">Navigation</div>
+    <div class="sb-item active"><span class="si">◈</span> Dashboard</div>
+    <div class="sb-item"><span class="si">⊕</span> Add Shortcut</div>
+    <div class="sb-item"><span class="si">▦</span> Categories</div>
+    <div class="sb-item"><span class="si">⚙</span> Customize</div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Bookmarks</div>
+    <div class="sb-item"><span class="si">▷</span> Dev Tools</div>
+    <div class="sb-item"><span class="si">▷</span> Self-hosted</div>
+    <div class="sb-item"><span class="si">▷</span> AI Services</div>
+    <div class="sb-item"><span class="si">▷</span> Media</div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Widgets</div>
+    <div class="sb-item"><span class="si">◎</span> Weather</div>
+    <div class="sb-item"><span class="si">▣</span> Server Status</div>
+  </div>
+
+  <div class="sidebar" id="sb-terminal" style="display:none">
+    <div class="sb-section">Sessions</div>
+    <div class="sb-item active"><span class="si">◉</span> vps-01 (main)</div>
+    <div class="sb-item"><span class="si">○</span> vps-02 (backup)</div>
+    <div class="sb-item"><span class="si">⊕</span> New Session</div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">Quick Commands</div>
+    <div class="sb-item"><span class="si">▤</span> htop</div>
+    <div class="sb-item"><span class="si">▤</span> docker ps</div>
+    <div class="sb-item"><span class="si">▤</span> nginx reload</div>
+    <div class="sb-item"><span class="si">▤</span> pm2 status</div>
+  </div>
+
+  <!-- MAIN PANELS -->
+  <div class="main">
+
+    <!-- NAS PANEL -->
+    <div class="panel active" id="panel-nas">
+      <div class="section-header">
+        <div>
+          <div class="section-title">System Overview</div>
+          <div class="section-sub">MARK-VPS-01 · Ubuntu 22.04 · Uptime 47d 12h</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-ghost">↻ Refresh</button>
+          <button class="btn btn-primary">⚡ Quick Actions</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card stat-blue">
+          <div class="stat-icon blue">⚡</div>
+          <div class="stat-label">CPU Usage</div>
+          <div class="stat-value" id="cpu-val" style="color:var(--accent-blue)">23%</div>
+          <div class="stat-sub">8-core · 3.4 GHz</div>
+          <div class="stat-bar"><div class="stat-fill fill-blue" id="cpu-bar" style="width:23%"></div></div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon green">🧠</div>
+          <div class="stat-label">Memory</div>
+          <div class="stat-value" style="color:var(--accent-green)">6.2 GB</div>
+          <div class="stat-sub">of 16 GB · 39%</div>
+          <div class="stat-bar"><div class="stat-fill fill-green" style="width:39%"></div></div>
+        </div>
+        <div class="stat-card stat-purple">
+          <div class="stat-icon purple">💾</div>
+          <div class="stat-label">Disk I/O</div>
+          <div class="stat-value" style="color:var(--accent-purple)">142 MB/s</div>
+          <div class="stat-sub">↑48 ↓94 MB/s</div>
+          <div class="stat-bar"><div class="stat-fill fill-purple" style="width:55%"></div></div>
+        </div>
+        <div class="stat-card stat-amber">
+          <div class="stat-icon amber">🌐</div>
+          <div class="stat-label">Network</div>
+          <div class="stat-value" style="color:var(--accent-amber)">2.4 Gbps</div>
+          <div class="stat-sub">↑800M ↓1.6G</div>
+          <div class="stat-bar"><div class="stat-fill fill-amber" style="width:60%"></div></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="glass-card">
+          <div class="card-header">
+            <span class="card-title">CPU History</span>
+            <span style="font-size:11px;color:var(--accent-green);font-weight:500">● Live</span>
+          </div>
+          <div class="card-body" style="padding:12px 16px 16px">
+            <svg class="chart-svg" viewBox="0 0 340 72" preserveAspectRatio="none" id="cpu-chart">
+              <defs>
+                <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path id="cpu-area" fill="url(#cg)"/>
+              <path id="cpu-line" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-header">
+            <span class="card-title">Disk Partitions</span>
+            <button class="btn btn-ghost" style="font-size:11px;padding:4px 10px">Manage</button>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+                  <span style="font-weight:500">/dev/sda1</span>
+                  <span style="color:var(--text-muted)">215 / 500 GB</span>
+                </div>
+                <div class="stat-bar" style="height:5px"><div class="stat-fill fill-blue" style="width:43%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+                  <span style="font-weight:500">/dev/sdb1</span>
+                  <span style="color:var(--accent-amber)">710 GB / 1 TB · 71%</span>
+                </div>
+                <div class="stat-bar" style="height:5px"><div class="stat-fill fill-amber" style="width:71%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+                  <span style="font-weight:500">/dev/sdc1</span>
+                  <span style="color:var(--text-muted)">360 GB / 2 TB</span>
+                </div>
+                <div class="stat-bar" style="height:5px"><div class="stat-fill fill-green" style="width:18%"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-cols">
+        <div class="glass-card">
+          <div class="card-header">
+            <span class="card-title">Top Processes</span>
+            <span style="font-size:12px;color:var(--text-muted)">148 running</span>
+          </div>
+          <div class="card-body">
+            <div class="proc-list">
+              <div class="proc-row"><div class="proc-dot dot-on"></div><div class="proc-name">nginx</div><div class="proc-bar-wrap"><div class="proc-bar-fill fill-blue" style="width:2%"></div></div><div class="proc-val" style="color:var(--text-muted)">0.2%</div></div>
+              <div class="proc-row"><div class="proc-dot dot-on"></div><div class="proc-name">postgres</div><div class="proc-bar-wrap"><div class="proc-bar-fill fill-purple" style="width:14%"></div></div><div class="proc-val" style="color:var(--accent-purple)">1.4%</div></div>
+              <div class="proc-row"><div class="proc-dot dot-on"></div><div class="proc-name">node</div><div class="proc-bar-wrap"><div class="proc-bar-fill fill-blue" style="width:67%"></div></div><div class="proc-val" style="color:var(--accent-blue)">8.7%</div></div>
+              <div class="proc-row"><div class="proc-dot dot-on"></div><div class="proc-name">redis</div><div class="proc-bar-wrap"><div class="proc-bar-fill fill-green" style="width:1%"></div></div><div class="proc-val" style="color:var(--text-muted)">0.1%</div></div>
+              <div class="proc-row"><div class="proc-dot dot-warn"></div><div class="proc-name">celery</div><div class="proc-bar-wrap"><div class="proc-bar-fill fill-amber" style="width:40%"></div></div><div class="proc-val" style="color:var(--accent-amber)">3.2%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="glass-card">
+            <div class="card-header"><span class="card-title">Docker</span><button class="btn btn-ghost" style="font-size:11px;padding:4px 10px">View All</button></div>
+            <div class="card-body" style="padding:8px 18px">
+              <div class="docker-row"><div class="proc-dot dot-on"></div><div class="docker-name">agenthub-web</div><div class="docker-port">:3000</div><div class="docker-status ds-on">running</div></div>
+              <div class="docker-row"><div class="proc-dot dot-on"></div><div class="docker-name">agenthub-api</div><div class="docker-port">:8000</div><div class="docker-status ds-on">running</div></div>
+              <div class="docker-row"><div class="proc-dot dot-on"></div><div class="docker-name">chromadb</div><div class="docker-port">:8001</div><div class="docker-status ds-on">running</div></div>
+              <div class="docker-row"><div class="proc-dot dot-warn"></div><div class="docker-name">celery-worker</div><div class="docker-port">—</div><div class="docker-status ds-warn">high load</div></div>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div class="card-header"><span class="card-title">Quick Terminal</span></div>
+            <div class="card-body" style="padding:12px">
+              <div class="terminal">
+                <div><span class="tp">mark@vps ~$</span> <span class="tc">df -h</span></div>
+                <span class="to">Filesystem  Size Used  Use%</span>
+                <span class="to">/dev/sda1   500G 215G   43%</span>
+                <span class="to">/dev/sdb1   1.0T 710G   71%</span>
+                <div><span class="tp">mark@vps ~$</span> <span class="tc"> </span><span class="tcursor"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVE PANEL -->
+    <div class="panel" id="panel-drive">
+      <div class="section-header">
+        <div>
+          <div class="section-title">CloudDrive</div>
+          <div class="section-sub">430 GB used · 570 GB free</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-ghost" onclick="showTransfer()">⬆ Upload</button>
+          <button class="btn btn-primary">⊕ New Folder</button>
+        </div>
+      </div>
+      <div class="toolbar-row">
+        <div class="search-glass">
+          <span style="color:var(--text-muted);font-size:15px">⌕</span>
+          <input type="text" placeholder="Search files…">
+        </div>
+        <div class="view-toggle">
+          <button class="vbtn active" id="vbtn-grid" onclick="setView('grid')">⊞</button>
+          <button class="vbtn" id="vbtn-list" onclick="setView('list')">☰</button>
+        </div>
+        <button class="btn btn-ghost">⇅ Sort</button>
+      </div>
+      <div class="breadcrumb">
+        <span>Home</span><span class="bc-sep">/</span>
+        <span>Videos</span><span class="bc-sep">/</span>
+        <span class="bc-cur">2025</span>
+      </div>
+      <div class="upload-zone" onclick="showTransfer()">
+        <span class="uz-icon">⬆</span>
+        <p>Drop files here, or <strong style="color:var(--accent-blue)">browse</strong> to upload</p>
+        <small>All file types · Max 50 GB per file</small>
+      </div>
+      <div class="file-grid" id="file-grid">
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">📁</span><div class="fn">Projects</div><div class="fm">32 items</div></div>
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">🎬</span><div class="fn">demo-v2.mp4</div><div class="fm">2.4 GB</div></div>
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">🖼</span><div class="fn">screenshot.png</div><div class="fm">3.2 MB</div></div>
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">📄</span><div class="fn">report-q1.pdf</div><div class="fm">4.8 MB</div></div>
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">📦</span><div class="fn">backup-2025.tar.gz</div><div class="fm">18.2 GB</div></div>
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">🎵</span><div class="fn">playlist.m3u8</div><div class="fm">12 KB</div></div>
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">🎬</span><div class="fn">tutorial-01.mkv</div><div class="fm">8.7 GB</div></div>
+        <div class="file-card" onclick="toggleSel(this)"><div class="fcheck">✓</div><span class="fi">📝</span><div class="fn">notes.md</div><div class="fm">48 KB</div></div>
+      </div>
+      <div class="context-bar" id="ctx-bar">
+        <span id="sel-count" style="font-size:13px;color:var(--accent-blue);font-weight:500">0 selected</span>
+        <div style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn btn-primary">⬇ Download</button>
+          <button class="btn btn-ghost">✂ Move</button>
+          <button class="btn btn-ghost" style="color:var(--accent-red)">✕ Delete</button>
+        </div>
+      </div>
+      <div class="transfer-pill" id="tf-pill">
+        <div class="tp-header">
+          <span>⬆ Uploading demo-video.mp4</span>
+          <span class="tp-close" onclick="hideTransfer()">×</span>
+        </div>
+        <div class="tp-bar"><div class="tp-fill" id="tf-fill" style="width:0%"></div></div>
+        <div class="tp-info"><span id="tf-size">0 GB / 4.8 GB</span><span id="tf-pct">0%</span></div>
+      </div>
+    </div>
+
+    <!-- HOME PANEL -->
+    <div class="panel" id="panel-home">
+      <div class="hp-hero">
+        <div class="hp-greeting">Good evening, <em>Mark</em> ✦</div>
+        <div class="hp-date-str" id="hp-date">Saturday, March 28, 2026</div>
+      </div>
+      <div class="hp-chips">
+        <div class="chip"><span class="chip-icon">🌤</span><div><div class="chip-val" style="color:var(--accent-amber)">24°C</div><div class="chip-label">Los Angeles</div></div></div>
+        <div class="chip"><span class="chip-icon">⚡</span><div><div class="chip-val" style="color:var(--accent-green)">99.8%</div><div class="chip-label">VPS Uptime</div></div></div>
+        <div class="chip"><span class="chip-icon">📦</span><div><div class="chip-val" style="color:var(--accent-purple)">12</div><div class="chip-label">Containers</div></div></div>
+        <div class="chip"><span class="chip-icon">🔒</span><div><div class="chip-val" style="color:var(--accent-blue)">Safe</div><div class="chip-label">Firewall</div></div></div>
+      </div>
+      <div class="hp-search-wrap">
+        <div class="hp-search">
+          <span style="color:var(--text-muted);font-size:16px">⌕</span>
+          <input type="text" placeholder="Search the web…">
+          <div class="eng-row">
+            <div class="eng active">G</div>
+            <div class="eng">B</div>
+            <div class="eng">D</div>
+          </div>
+        </div>
+      </div>
+      <div class="app-section">
+        <div class="app-sec-head">Self-hosted</div>
+        <div class="app-grid">
+          <a class="app-item"><div class="app-ico ico-blue">🤖</div><div class="app-name">AgentHub</div><div class="app-sub">:3000</div></a>
+          <a class="app-item"><div class="app-ico ico-green">🗄</div><div class="app-name">Portainer</div><div class="app-sub">:9000</div></a>
+          <a class="app-item"><div class="app-ico ico-orange">📊</div><div class="app-name">Grafana</div><div class="app-sub">:3001</div></a>
+          <a class="app-item"><div class="app-ico ico-teal">🔗</div><div class="app-name">Nginx PM</div><div class="app-sub">:81</div></a>
+          <a class="app-item"><div class="app-ico ico-red">🛡</div><div class="app-name">Firewall</div><div class="app-sub">UFW</div></a>
+          <a class="app-item"><div class="app-ico ico-purple">💾</div><div class="app-name">pgAdmin</div><div class="app-sub">:5050</div></a>
+        </div>
+      </div>
+      <div class="app-section">
+        <div class="app-sec-head">AI Services</div>
+        <div class="app-grid">
+          <a class="app-item"><div class="app-ico ico-purple" style="font-size:15px;font-weight:700">AI</div><div class="app-name">Claude</div><div class="app-sub">claude.ai</div></a>
+          <a class="app-item"><div class="app-ico ico-blue" style="font-size:15px;font-weight:700">GP</div><div class="app-name">ChatGPT</div><div class="app-sub">openai.com</div></a>
+          <a class="app-item"><div class="app-ico ico-teal">✦</div><div class="app-name">Gemini</div><div class="app-sub">gemini.ai</div></a>
+          <a class="app-item"><div class="app-ico ico-orange">⚡</div><div class="app-name">Perplexity</div><div class="app-sub">perplexity.ai</div></a>
+        </div>
+      </div>
+      <div class="app-section">
+        <div class="app-sec-head">Dev tools</div>
+        <div class="app-grid">
+          <a class="app-item"><div class="app-ico ico-blue">⌥</div><div class="app-name">GitHub</div><div class="app-sub">github.com</div></a>
+          <a class="app-item"><div class="app-ico ico-orange">▦</div><div class="app-name">Vercel</div><div class="app-sub">vercel.com</div></a>
+          <a class="app-item"><div class="app-ico ico-teal">◎</div><div class="app-name">Cloudflare</div><div class="app-sub">dash.cf</div></a>
+          <a class="app-item"><div class="app-ico ico-green">◈</div><div class="app-name">HuggingFace</div><div class="app-sub">hf.co</div></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- TERMINAL PANEL -->
+    <div class="panel" id="panel-terminal">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Terminal — vps-01</div>
+          <div class="section-sub">SSH · mark@123.45.67.89 · bash</div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-ghost">⊕ New Tab</button>
+          <button class="btn btn-ghost" style="color:var(--accent-red)">✕ Disconnect</button>
+        </div>
+      </div>
+      <div class="glass-card" style="border-radius:var(--radius-xl)">
+        <div style="padding:6px 12px;border-bottom:1px solid rgba(0,0,0,0.05);display:flex;gap:6px;align-items:center">
+          <div style="width:12px;height:12px;border-radius:50%;background:#ff5f57"></div>
+          <div style="width:12px;height:12px;border-radius:50%;background:#febc2e"></div>
+          <div style="width:12px;height:12px;border-radius:50%;background:#28c840"></div>
+          <span style="font-size:12px;color:var(--text-muted);margin-left:8px">bash — mark@vps-01</span>
+        </div>
+        <div style="padding:0">
+          <div class="terminal" style="border:none;border-radius:0 0 var(--radius-xl) var(--radius-xl);background:rgba(15,23,42,0.82);min-height:380px">
+            <div style="color:#64748b;margin-bottom:12px;font-size:11px">Connected · Ubuntu 22.04 · Uptime 47d 12h</div>
+            <div><span class="tp">mark@vps-01:~$</span> <span class="tc">pm2 status</span></div>
+            <div style="color:#475569;margin:8px 0;font-size:11px">
+              <span style="color:#64748b">┌──────────────────┬──────┬──────────┬────────┐</span><br>
+              <span style="color:#64748b">│ App              │ id   │ status   │ cpu    │</span><br>
+              <span style="color:#64748b">├──────────────────┼──────┼──────────┼────────┤</span><br>
+              <span style="color:#64748b">│ </span><span style="color:#e2e8f0">agenthub-web    </span><span style="color:#64748b">│ 0    │ </span><span style="color:#34d399">online   </span><span style="color:#64748b">│ 1.2%  │</span><br>
+              <span style="color:#64748b">│ </span><span style="color:#e2e8f0">agenthub-api    </span><span style="color:#64748b">│ 1    │ </span><span style="color:#34d399">online   </span><span style="color:#64748b">│ 8.7%  │</span><br>
+              <span style="color:#64748b">└──────────────────┴──────┴──────────┴────────┘</span>
+            </div>
+            <div><span class="tp">mark@vps-01:~$</span> <span class="tc">docker ps --format "table {{.Names}}\t{{.Status}}"</span></div>
+            <div style="margin:8px 0;font-size:12px">
+              <span style="color:#94a3b8">NAMES              STATUS</span><br>
+              <span style="color:#e2e8f0">postgres           </span><span style="color:#34d399">Up 47 days</span><br>
+              <span style="color:#e2e8f0">redis              </span><span style="color:#34d399">Up 47 days</span><br>
+              <span style="color:#e2e8f0">chromadb           </span><span style="color:#34d399">Up 12 days</span><br>
+              <span style="color:#e2e8f0">celery-worker      </span><span style="color:#fbbf24">Restarting (3h)</span>
+            </div>
+            <div><span class="tp">mark@vps-01:~$</span><span class="tcursor"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const panels=['nas','drive','home','terminal'];
+function switchPanel(p){
+  panels.forEach(id=>{
+    document.getElementById('panel-'+id).classList.toggle('active',id===p);
+    const sb=document.getElementById('sb-'+id);
+    if(sb) sb.style.display=id===p?'flex':'none';
+  });
+  document.querySelectorAll('.nav-pill').forEach((t,i)=>t.classList.toggle('active',panels[i]===p));
+}
+document.getElementById('sb-nas').style.display='flex';
+document.getElementById('sb-nas').style.flexDirection='column';
+
+const cpuData=Array.from({length:30},()=>Math.floor(Math.random()*35+8));
+function renderChart(){
+  const w=340,h=72,pts=cpuData.map((v,i)=>[i*(w/29),h-((v/60)*h)]);
+  const line='M '+pts.map(p=>p.join(',')).join(' L ');
+  const area=line+` L ${w} ${h} L 0 ${h} Z`;
+  document.getElementById('cpu-line').setAttribute('d',line);
+  document.getElementById('cpu-area').setAttribute('d',area);
+}
+renderChart();
+setInterval(()=>{
+  cpuData.shift();
+  const v=Math.floor(Math.random()*35+8);
+  cpuData.push(v);
+  renderChart();
+  document.getElementById('cpu-val').textContent=v+'%';
+  document.getElementById('cpu-bar').style.width=v+'%';
+},1500);
+
+let selCount=0;
+function toggleSel(el){
+  el.classList.toggle('sel');
+  selCount=document.querySelectorAll('.file-card.sel').length;
+  const bar=document.getElementById('ctx-bar');
+  bar.classList.toggle('show',selCount>0);
+  if(selCount>0) document.getElementById('sel-count').textContent=selCount+' selected';
+}
+
+function setView(v){
+  ['grid','list'].forEach(k=>{
+    document.getElementById('vbtn-'+k).classList.toggle('active',k===v);
+  });
+}
+
+let tfTimer;
+function showTransfer(){
+  const pill=document.getElementById('tf-pill');
+  pill.classList.add('show');
+  let p=0;
+  clearInterval(tfTimer);
+  tfTimer=setInterval(()=>{
+    p+=Math.random()*2.5;
+    if(p>=100){p=100;clearInterval(tfTimer);}
+    document.getElementById('tf-fill').style.width=Math.round(p)+'%';
+    document.getElementById('tf-size').textContent=(p/100*4.8).toFixed(1)+' GB / 4.8 GB';
+    document.getElementById('tf-pct').textContent=Math.round(p)+'%';
+  },300);
+}
+function hideTransfer(){
+  document.getElementById('tf-pill').classList.remove('show');
+  clearInterval(tfTimer);
+}
+
+document.querySelectorAll('.eng').forEach(e=>{
+  e.addEventListener('click',()=>{
+    document.querySelectorAll('.eng').forEach(x=>x.classList.remove('active'));
+    e.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.sb-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    const parent=item.parentElement;
+    parent.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+const d=new Date();
+const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+document.getElementById('hp-date').textContent=`${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+</script>
