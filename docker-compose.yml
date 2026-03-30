@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  markos-web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: markos-web
+    restart: always
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    networks:
+      - markos-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  markos-api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: markos-api
+    restart: always
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - STORAGE_ROOT=${STORAGE_ROOT}
+      - MULTI_USER_MODE=${MULTI_USER_MODE}
+      - MAX_UPLOAD_SIZE_GB=${MAX_UPLOAD_SIZE_GB}
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+      - WEATHER_CITY=${WEATHER_CITY}
+      - ENABLE_TERMINAL=${ENABLE_TERMINAL}
+      - TERMINAL_MAX_SESSIONS=${TERMINAL_MAX_SESSIONS}
+      - LOG_LEVEL=${LOG_LEVEL}
+    volumes:
+      - ${STORAGE_ROOT}:/data/storage
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - markos-net
+    depends_on:
+      markos-db:
+        condition: service_healthy
+      markos-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  markos-db:
+    image: postgres:15-alpine
+    container_name: markos-db
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-markos}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-markos_pass}
+      - POSTGRES_DB=${POSTGRES_DB:-markos_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - markos-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-markos} -d ${POSTGRES_DB:-markos_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  markos-redis:
+    image: redis:7-alpine
+    container_name: markos-redis
+    restart: always
+    networks:
+      - markos-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  markos-nginx:
+    image: nginx:alpine
+    container_name: markos-nginx
+    restart: always
+    ports:
+      - "${PANEL_PORT:-80}:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/certs:/etc/nginx/certs:ro
+    networks:
+      - markos-net
+    depends_on:
+      markos-web:
+        condition: service_healthy
+      markos-api:
+        condition: service_healthy
+
+networks:
+  markos-net:
+    driver: bridge
+
+volumes:
+  pgdata:
