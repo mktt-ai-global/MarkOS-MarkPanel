@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # MarkOS MarkPanel Interactive Installation Script
-# Inspired by 3x-ui style installation
+# Inspired by 3x-ui style installation - Hardened Version
 
 set -e
 
@@ -20,17 +20,38 @@ check_docker() {
         echo_red "Error: Docker is not installed. Please install Docker first."
         exit 1
     fi
-    if ! command -v docker-compose >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1; then
+    # Support both 'docker-compose' and 'docker compose'
+    if command -v docker-compose >/dev/null 2>&1; then
+        DOCKER_COMPOSE="docker-compose"
+    elif docker compose version >/dev/null 2>&1; then
+        DOCKER_COMPOSE="docker compose"
+    else
         echo_red "Error: Docker Compose is not installed. Please install Docker Compose first."
         exit 1
     fi
 }
 
-generate_secret() {
+check_files() {
+    echo_blue "Verifying essential project files..."
+    local missing=0
+    for file in "docker-compose.yml" "apps/api/Dockerfile" "apps/web/Dockerfile" "scripts/init_db.py" "docker/nginx/nginx.conf"; do
+        if [ ! -f "$file" ]; then
+            echo_red "Error: Missing critical file: $file"
+            missing=1
+        fi
+    done
+    if [ $missing -eq 1 ]; then
+        echo_red "Installation aborted due to missing files."
+        exit 1
+    fi
+}
+
+generate_random_string() {
+    local length=${1:-16}
     if command -v openssl >/dev/null 2>&1; then
-        openssl rand -hex 32
+        openssl rand -hex $((length/2))
     else
-        LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 64 | head -n 1
+        LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w "$length" | head -n 1
     fi
 }
 
@@ -42,12 +63,13 @@ echo_blue "================================================================"
 echo "Starting installation..."
 
 check_docker
+check_files
 
 # Create .env if not exists
 if [ ! -f "$ENV_FILE" ]; then
     echo "Initializing environment configuration..."
     cp "$ENV_EXAMPLE" "$ENV_FILE"
-    SECRET=$(generate_secret)
+    SECRET=$(generate_random_string 32)
     # Universal sed replacement (macOS/Linux compatible)
     if [[ "$OSTYPE" == "darwin"* ]]; then
         sed -i '' "s/replace_me_with_random_32_chars/$SECRET/g" "$ENV_FILE"
@@ -66,13 +88,29 @@ PORT=${PORT:-80}
 read -p "Enter Admin Username [default admin]: " ADMIN_USER
 ADMIN_USER=${ADMIN_USER:-admin}
 
-# 3. Admin Password
-read -p "Enter Admin Password [default admin123]: " ADMIN_PASS
-ADMIN_PASS=${ADMIN_PASS:-admin123}
+# 3. Admin Password (Security: No default admin123)
+echo -n "Enter Admin Password [Leave blank to generate random]: "
+read -s ADMIN_PASS
+echo "" # New line after silent input
+
+if [ -z "$ADMIN_PASS" ]; then
+    ADMIN_PASS=$(generate_random_string 16)
+    IS_RANDOM=true
+else
+    IS_RANDOM=false
+fi
 
 # 4. Storage Root
 read -p "Enter Storage Path [default /data/storage]: " STORAGE_PATH
 STORAGE_PATH=${STORAGE_PATH:-/data/storage}
+
+# Prepare Storage Directory and Permissions
+echo_blue "Preparing storage directory: $STORAGE_PATH"
+mkdir -p "$STORAGE_PATH"
+# Only run chown on Linux where UID 1000 is common for Docker
+if [[ "$OSTYPE" != "darwin"* ]]; then
+    sudo chown -R 1000:1000 "$STORAGE_PATH" || echo_yellow "Warning: Could not set storage permissions. Ensure the Docker user has access."
+fi
 
 # Update .env
 if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -98,20 +136,40 @@ echo_green "\nConfig updated successfully!"
 
 # Build and Start
 echo_blue "\n--- Deploying Containers ---"
-docker-compose up -d --build
+$DOCKER_COMPOSE up -d --build
 
-# Initialize Database inside the API container
+# Initialize Database inside the API container with retry logic
 echo_blue "\n--- Initializing Database & Admin Account ---"
-# Wait a bit for the DB to be ready
-sleep 5
-docker exec -it markos-api python scripts/init_db.py
+MAX_RETRIES=30
+RETRY_COUNT=0
+echo "Waiting for API service to become healthy..."
+
+until [ $(docker inspect -f '{{.State.Health.Status}}' markos-api) == "healthy" ]; do
+    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+        echo_red "Error: API service failed to become healthy within $((MAX_RETRIES * 2)) seconds."
+        echo_yellow "Checking logs..."
+        docker logs markos-api | tail -n 20
+        exit 1
+    fi
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    echo -n "."
+    sleep 2
+done
+
+echo_green "\nAPI is healthy! Running init_db.py..."
+# Security: Removed -it for non-interactive compatibility
+docker exec markos-api python scripts/init_db.py
 
 echo_green "\n================================================================"
 echo_green "  MarkOS MarkPanel has been successfully installed!             "
 echo_green "================================================================"
 echo "Panel URL: http://localhost:$PORT"
 echo "Admin: $ADMIN_USER"
-echo "Password: $ADMIN_PASS"
+if [ "$IS_RANDOM" = true ]; then
+    echo_yellow "Password: $ADMIN_PASS (SAVE THIS PASSWORD!)"
+else
+    echo "Password: [Your chosen password]"
+fi
 echo "----------------------------------------------------------------"
 echo "Enjoy your enterprise-grade NAS management system."
 echo "================================================================"
