@@ -144,7 +144,7 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 echo "Waiting for API service to become healthy..."
 
-until [ $(docker inspect -f '{{.State.Health.Status}}' markos-api) == "healthy" ]; do
+until [ "$(docker inspect -f '{{.State.Health.Status}}' markos-api 2>/dev/null)" == "healthy" ]; do
     if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
         echo_red "Error: API service failed to become healthy within $((MAX_RETRIES * 2)) seconds."
         echo_yellow "Checking logs..."
@@ -166,7 +166,10 @@ echo_green "================================================================"
 echo "Panel URL: http://localhost:$PORT"
 echo "Admin: $ADMIN_USER"
 if [ "$IS_RANDOM" = true ]; then
-    echo_yellow "Password: $ADMIN_PASS (SAVE THIS PASSWORD!)"
+    echo "$ADMIN_PASS" > .admin_pass
+    echo_yellow "Password: $ADMIN_PASS (SAVE THIS PASSWORD! It is also saved to .admin_pass)"
+    read -p "Press enter to continue and delete .admin_pass..."
+    rm .admin_pass
 else
     echo "Password: [Your chosen password]"
 fi
