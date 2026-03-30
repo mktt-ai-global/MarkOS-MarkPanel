@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pydantic
+sqlalchemy
+psutil
+pyjwt
+passlib[bcrypt]
+python-multipart
+httpx
+docker
+asyncssh
